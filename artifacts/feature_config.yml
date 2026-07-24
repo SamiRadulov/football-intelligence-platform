@@ -1,0 +1,35 @@
+# Version-controlled analytical configuration.
+# Models and features must read from this file, never hard-code these values.
+
+dataset:
+  source: statsbomb-open-data
+  competition_id: 2        # Premier League
+  season_id: 27            # 2015/2016
+  competition_name: Premier League
+  season_name: "2015/2016"
+  # Why: only complete men's league season in the open data with full event
+  # depth (pressures, xG, freeze frames). Chosen after auditing all
+  # competition-seasons — see docs/data_audit.csv.
+
+thresholds:
+  min_minutes_season: 600      # below this, per-90 season metrics are null
+  low_minutes_warning: 900     # between min and this, results carry a warning
+  min_pass_attempts_for_rate: 100
+  min_shots_for_rate: 20
+  min_dribbles_for_rate: 20
+
+role_groups:
+  # Broad outfield roles for the MVP; goalkeepers are excluded.
+  - key: CB
+    name: Centre-backs
+  - key: FB
+    name: Full-backs / wing-backs
+  - key: CM
+    name: Central midfielders
+  - key: AM_W
+    name: Attacking midfielders / wingers
+  - key: ST
+    name: Strikers
+
+# Role-specific feature lists and similarity weights are added in the
+# feature-mart phase (Phase 3) and similarity phase (Phase 4).
