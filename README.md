@@ -21,6 +21,23 @@ RAW (StatsBomb JSON) → STAGING (Parquet) → CURATED (DuckDB) → FEATURES (pl
 
 Planned stack: Python (pandas/Polars), Parquet + DuckDB, scikit-learn, Plotly + mplsoccer, Streamlit, pytest + Ruff + GitHub Actions.
 
+## Quick start
+
+```bash
+# 1. Create the environment (Python 3.12+)
+py -3.12 -m venv .venv
+.venv/Scripts/python -m pip install -e ".[dev]"
+
+# 2. Download the raw StatsBomb layer for the configured dataset (PL 2015/16).
+#    ~1.2 GB into data/raw/ (gitignored). Use --limit N for a quick sample.
+.venv/Scripts/python scripts/download_data.py
+
+# 3. Run the tests
+.venv/Scripts/python -m pytest -q
+```
+
+The dataset is defined once in [artifacts/feature_config.yml](artifacts/feature_config.yml); every step reads it from there.
+
 ## Data source & attribution
 
 This project uses **StatsBomb Open Data**. See [DATA_SOURCES.md](DATA_SOURCES.md) for attribution and licensing details. Raw data is not redistributed in this repository.
