@@ -1,0 +1,8 @@
+# Normalize line endings: store text with LF in the repo, check out native.
+* text=auto eol=lf
+
+# Data and binaries are left untouched.
+*.json binary
+*.parquet binary
+*.png binary
+*.jpg binary
