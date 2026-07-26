@@ -23,7 +23,7 @@ def _events():
             "related_events": ["e3", "e4"],
             "pass": {"length": 15.0, "angle": 0.1, "height": {"name": "Ground Pass"},
                      "end_location": [45.0, 42.0], "recipient": {"id": 101, "name": "Mate"},
-                     "switch": True},
+                     "switch": True, "aerial_won": True},
         },
     ]
 
@@ -58,6 +58,15 @@ def test_missing_player_id_is_null():
     df = flatten_events(999, _events())
     half_start = df[df["type"] == "Half Start"].iloc[0]
     assert pd.isna(half_start["player_id"])
+
+
+def test_nested_aerial_won_is_coalesced():
+    # aerial_won lives under the type block (pass.aerial_won), not top-level.
+    df = flatten_events(999, _events())
+    pass_row = df[df["type"] == "Pass"].iloc[0]
+    half_start = df[df["type"] == "Half Start"].iloc[0]
+    assert bool(pass_row["aerial_won"]) is True
+    assert bool(half_start["aerial_won"]) is False
 
 
 def test_related_events_joined_to_string():

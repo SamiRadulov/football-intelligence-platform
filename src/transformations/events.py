@@ -65,6 +65,7 @@ _BOOLEAN_FLAGS = [
     "under_pressure",
     "counterpress",
     "out",
+    "aerial_won",
     "pass_cross",
     "pass_switch",
     "pass_through_ball",
@@ -92,6 +93,7 @@ CANONICAL_COLUMNS = (
      "type", "possession", "possession_team", "play_pattern", "team_id", "team",
      "player_id", "player_name", "position",
      "location_x", "location_y", "duration", "under_pressure", "counterpress", "out",
+     "aerial_won",
      "pass_length", "pass_angle", "pass_height", "pass_end_x", "pass_end_y",
      "pass_recipient_id", "pass_recipient_name", "pass_outcome", "pass_type",
      "pass_body_part", "pass_cross", "pass_switch", "pass_through_ball",
@@ -142,6 +144,13 @@ def flatten_events(match_id: int, events_raw: list[dict]) -> pd.DataFrame:
     df = pd.json_normalize(events_raw, sep=".")
     df["match_id"] = match_id
     df = _split_locations(df)
+
+    # `aerial_won` is nested per event type (pass.aerial_won, clearance.aerial_won,
+    # shot.aerial_won, ...), never top-level. Coalesce them into one flag: a player
+    # can only win an aerial via one action, so OR-ing the type blocks is safe.
+    aerial_cols = [c for c in df.columns if c.endswith("aerial_won")]
+    df["aerial_won"] = df[aerial_cols].any(axis=1) if aerial_cols else False
+
     df = df.rename(columns=_RENAME)
 
     # Keep only canonical columns that exist; add any missing as null.

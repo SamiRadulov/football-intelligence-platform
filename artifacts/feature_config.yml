@@ -17,6 +17,7 @@ thresholds:
   min_pass_attempts_for_rate: 100
   min_shots_for_rate: 20
   min_dribbles_for_rate: 20
+  min_aerials_for_rate: 20
 
 role_groups:
   # Broad outfield roles for the MVP; goalkeepers are excluded.

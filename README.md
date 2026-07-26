@@ -35,7 +35,10 @@ py -3.12 -m venv .venv
 # 3. Build the canonical staging layer (Parquet + DuckDB) and run quality checks.
 .venv/Scripts/python scripts/build_staging.py
 
-# 4. Run the tests
+# 4. Build the player feature marts (role-aware per-90 / percentile metrics).
+.venv/Scripts/python scripts/build_player_features.py
+
+# 5. Run the tests
 .venv/Scripts/python -m pytest -q
 ```
 
@@ -45,7 +48,11 @@ py -3.12 -m venv .venv
 |---|---|---|
 | Raw | `data/raw/` (gitignored) | Unchanged StatsBomb JSON + `manifest.json` |
 | Staging | `data/staging/` (gitignored) | Canonical Parquet: `dim_matches`, `dim_players`, `fact_lineups`, `fact_events` |
-| Curated | `data/curated.duckdb` (gitignored) | The same four tables in DuckDB, queried by the marts and app |
+| Curated | `data/curated.duckdb` (gitignored) | Canonical tables **and** feature marts in DuckDB, queried by the app |
+
+**Feature marts** (built on the curated layer): `mart_player_match` (raw metric
+counts per player-match) and `mart_player_season` (role-aware per-90,
+possession-adjusted and percentile features for players with ≥ 600 minutes).
 
 Build steps read raw and write staging/curated; nothing overwrites raw. See
 [docs/METRIC_DICTIONARY.md](docs/METRIC_DICTIONARY.md) for metric definitions.

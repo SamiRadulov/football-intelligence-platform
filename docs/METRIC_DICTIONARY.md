@@ -43,6 +43,40 @@ a definition is not — update this file and the methodology page together.
 - **Standardization**: z-scores within role group; users see percentiles (within role,
   within this competition-season).
 
+## Operational definitions (as implemented in Phase 3)
+
+Pitch geometry uses StatsBomb units (120 × 80, the acting team always attacks
+towards x = 120):
+- **opponent goal centre** = (120, 40); distance-to-goal = `hypot(120 − x, 40 − y)`
+- **penalty box** = `x ≥ 102 and 18 ≤ y ≤ 62`; **final third** = `x ≥ 80`
+
+Thresholds and rules:
+- **Forward pass**: completed, `end_x − start_x ≥ 5`.
+- **Progressive pass / carry**: reduces distance-to-goal by `≥ 10`.
+- **Long pass**: `pass_length ≥ 30`.
+- **Final-third / box entry**: start outside the zone, end inside (so a pass that
+  begins in the final third is not counted as an entry).
+- **Open-play passes**: pass volume and completion exclude set pieces
+  (throw-ins, corners, free kicks, goal kicks, kick-offs). A completed pass has a
+  null `pass_outcome`.
+- **Non-penalty shooting**: shots with `shot_type = 'Penalty'` are excluded from
+  `shots_p90`, `npxg_p90` and `np_goals`.
+- **Key pass / xG assisted**: a key pass has `pass_shot_assist = true`; xG assisted
+  credits the assisting passer with the xG of the shot that its `shot_key_pass_id`
+  points back to.
+- **Turnovers** = miscontrols + dispossessions + incomplete passes made under pressure.
+- **Aerials**: an aerial win is `aerial_won = true` (a flag nested under each event
+  type — pass/clearance/shot/… — coalesced during flattening); an aerial loss is a
+  `Duel` of type `Aerial Lost`.
+- **Possession adjustment**: `padj_factor = 0.5 / (1 − possession_share)`, applied to
+  `pressures/tackles/interceptions` per-90. `possession_share` is the team's share of
+  all passes across its matches in the season. A team with 50% possession is unchanged;
+  low-possession teams are scaled down, high-possession teams up, so defensive volume
+  is comparable across styles.
+- **Percentiles** are ranked **within role group** over qualifying players
+  (≥ 600 minutes). Winsorization and z-score standardization are applied later, in the
+  Phase 4 similarity feature matrix, not here.
+
 ## Player metrics
 
 ### Passing & security (all roles)
