@@ -7,7 +7,29 @@ a definition is not — update this file and the methodology page together.
 
 ## Global rules
 
-- **Minutes** are calculated from lineups and substitution events, never assumed to be 90.
+- **Minutes** are calculated from each player's position spells in `lineups.json`,
+  never assumed to be 90. Each spell has an absolute cumulative match clock
+  (`from`/`to`, where `to: null` = played to the final whistle). A player's minutes
+  = the **sum of each spell's duration** (summing, not last−first, so a temporary
+  "Player Off"/"Player On" gap is excluded), with the final whistle taken as the
+  latest event time in that match. **Stoppage time is included**, so a full match is
+  ~90 + added time (e.g. 94.4) and every player in a given match is scaled by the
+  same match length. Substitutions, tactical shifts and red cards all appear as spell
+  boundaries, so no event-by-event special-casing is needed.
+
+## Known data-quality limitations
+
+- **Team-minutes reconciliation** (a warning-level check): summed outfield minutes
+  should equal 11 × match length. In ~15 of 760 team-matches (2%) they deviate by more
+  than 3 minutes, for three genuine source-data reasons, none of them pipeline bugs:
+  - *Negative* — a player leaves temporarily ("Player Off") without an immediate
+    replacement, so the team really is short-handed for those minutes; or a red card
+    reduces the team to ten.
+  - *Positive* — the source lineup is internally inconsistent (e.g. a player tagged
+    "Substitution - Off" who then returns via "Player On"), so StatsBomb records 12
+    players on the pitch.
+  The check surfaces these rather than hiding them. The per-match error is a few
+  minutes, negligible once aggregated to season per-90 over the 600-minute threshold.
 - **Per-90**: `metric_per90 = metric_count / minutes * 90`. Null when season minutes < 600
   (see `artifacts/feature_config.yml`).
 - **Rates/percentages** are kept separate from counts and require a minimum number of

@@ -1,6 +1,9 @@
-# Data layers (raw and interim are never committed; sample data is allowed)
+# Data layers (raw/interim/staging are never committed; sample data is allowed)
 data/raw/
 data/interim/
+data/staging/
+*.duckdb
+*.duckdb.wal
 
 # Python
 __pycache__/

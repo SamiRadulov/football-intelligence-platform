@@ -32,9 +32,23 @@ py -3.12 -m venv .venv
 #    ~1.2 GB into data/raw/ (gitignored). Use --limit N for a quick sample.
 .venv/Scripts/python scripts/download_data.py
 
-# 3. Run the tests
+# 3. Build the canonical staging layer (Parquet + DuckDB) and run quality checks.
+.venv/Scripts/python scripts/build_staging.py
+
+# 4. Run the tests
 .venv/Scripts/python -m pytest -q
 ```
+
+## Data layers
+
+| Layer | Location | Contents |
+|---|---|---|
+| Raw | `data/raw/` (gitignored) | Unchanged StatsBomb JSON + `manifest.json` |
+| Staging | `data/staging/` (gitignored) | Canonical Parquet: `dim_matches`, `dim_players`, `fact_lineups`, `fact_events` |
+| Curated | `data/curated.duckdb` (gitignored) | The same four tables in DuckDB, queried by the marts and app |
+
+Build steps read raw and write staging/curated; nothing overwrites raw. See
+[docs/METRIC_DICTIONARY.md](docs/METRIC_DICTIONARY.md) for metric definitions.
 
 The dataset is defined once in [artifacts/feature_config.yml](artifacts/feature_config.yml); every step reads it from there.
 
