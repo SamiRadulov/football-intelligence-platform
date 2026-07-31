@@ -86,9 +86,18 @@ Run with `scripts/validate_similarity.py`. Results on the full dataset
 
 | Check | Result | Reading |
 |---|---|---|
-| Match resampling (keep random 80%, 5 seeds) | **76.8% retained** (sd 1.2%) | Rankings reflect season-long style, not a handful of matches |
-| Minutes threshold raised to 900 / 1200 | 86.7% / 76.0% retained | Answers are not an artefact of the 600-minute cut-off |
+| Match resampling (keep random 80%, 5 seeds) | **81.2% retained** (sd 0.7%) | Rankings reflect season-long style, not a handful of matches |
+| Minutes threshold raised to 900 / 1200 | **98.0% / 98.4% retained** | The answers are not an artefact of the 600-minute cut-off |
 | Role weights vs equal weights | 91.7% retained | The weights refine the result; the *feature selection* per role does most of the work |
+
+**How overlap is measured.** Only baseline recommendations that could still be
+returned are counted. Resampling and higher minutes thresholds push some players
+below the qualifying threshold entirely, and scoring those as "lost
+recommendations" would measure candidate-pool shrinkage rather than ranking
+stability. An earlier version of this check did exactly that and understated
+stability — most severely for the minutes threshold, where the raw figure (76%
+at 1200 minutes) was almost entirely pool shrinkage rather than genuine
+re-ranking.
 
 The weight-sensitivity number is worth stating plainly: hand-tuned role weights
 change roughly one result in twelve. They are a refinement, not the engine. Anyone

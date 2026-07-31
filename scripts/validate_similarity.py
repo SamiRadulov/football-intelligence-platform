@@ -64,13 +64,30 @@ def top_n_sets(
     return out
 
 
-def mean_overlap(base: dict[int, list[int]], other: dict[int, list[int]], top_n: int) -> tuple[float, int]:
-    """Average share of the top-N that survives, over players present in both."""
+def mean_overlap(
+    base: dict[int, list[int]], other: dict[int, list[int]], top_n: int
+) -> tuple[float, int]:
+    """Average share of the baseline top-N that survives the change.
+
+    Only baseline recommendations that *could* still be returned are counted.
+    Resampling and higher minutes thresholds push some players below the
+    qualifying threshold entirely; without this restriction those players would
+    be scored as "lost recommendations" when they simply left the candidate
+    pool, which measures pool shrinkage rather than ranking stability.
+    """
     shared = set(base) & set(other)
     if not shared:
         return float("nan"), 0
-    overlaps = [len(set(base[p]) & set(other[p])) / top_n for p in shared]
-    return float(np.mean(overlaps)), len(shared)
+    universe = set(other)
+    overlaps = []
+    for player in shared:
+        still_eligible = [c for c in base[player] if c in universe]
+        if not still_eligible:
+            continue
+        overlaps.append(len(set(still_eligible) & set(other[player])) / len(still_eligible))
+    if not overlaps:
+        return float("nan"), 0
+    return float(np.mean(overlaps)), len(overlaps)
 
 
 def rebuild_season(
@@ -125,7 +142,7 @@ def main() -> None:
                                 team_possession, config, match_ids=subset)
         overlap, n = mean_overlap(base_top, top_n_sets(season, config, args.top), args.top)
         scores.append(overlap)
-        print(f"   seed {seed}: {overlap:.1%} of the top-{args.top} retained "
+        print(f"   seed {seed}: {overlap:.1%} of still-eligible recommendations retained "
               f"({n} players comparable, {len(season)} qualified)")
     print(f"   mean: {np.mean(scores):.1%}  (sd {np.std(scores):.1%})\n")
 
