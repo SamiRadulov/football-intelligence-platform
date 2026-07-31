@@ -91,6 +91,45 @@ def test_penalty_shot_excluded_from_np_metrics():
     assert row["np_goals"] == 0
 
 
+def test_zone14_reception_and_entry():
+    # Zone 14 = x 78-102, y 30-50 (central pocket just outside the box).
+    row = _player_row([
+        {"type": "Ball Receipt*", "location_x": 90, "location_y": 40},   # in Zone 14
+        {"type": "Ball Receipt*", "location_x": 90, "location_y": 20},   # halfspace, not Z14
+        # pass from outside Zone 14 into it -> an entry
+        {"type": "Pass", "location_x": 60, "location_y": 40, "pass_end_x": 90, "pass_end_y": 40},
+    ])
+    assert row["zone14_receptions"] == 1
+    assert row["zone14_entries"] == 1
+
+
+def test_pass_starting_in_zone14_is_not_an_entry():
+    row = _player_row([
+        {"type": "Pass", "location_x": 85, "location_y": 40, "pass_end_x": 95, "pass_end_y": 45},
+    ])
+    assert row["zone14_entries"] == 0
+
+
+def test_halfspace_and_wide_channels_are_mirror_symmetric():
+    # Both halfspace bands (y 18-30 and y 50-62) count the same; outside the
+    # box width (y<18 or y>62) is the wide channel.
+    row = _player_row([
+        {"type": "Pass", "location_x": 80, "location_y": 24,
+         "pass_end_x": 85, "pass_end_y": 24},   # halfspace (one side)
+        {"type": "Pass", "location_x": 80, "location_y": 56,
+         "pass_end_x": 85, "pass_end_y": 56},   # halfspace (other side)
+        {"type": "Pass", "location_x": 80, "location_y": 8,
+         "pass_end_x": 85, "pass_end_y": 8},    # wide
+        {"type": "Pass", "location_x": 80, "location_y": 72,
+         "pass_end_x": 85, "pass_end_y": 72},   # wide
+        {"type": "Pass", "location_x": 30, "location_y": 8,
+         "pass_end_x": 40, "pass_end_y": 8},    # own half -> neither
+    ])
+    assert row["halfspace_touches"] == 2
+    assert row["wide_touches"] == 2
+    assert row["touches_att_half"] == 4   # the own-half touch is excluded
+
+
 def test_aerials_and_turnovers():
     row = _player_row([
         {"type": "Clearance", "aerial_won": True, "location_x": 20, "location_y": 40},

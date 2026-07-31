@@ -42,7 +42,8 @@ def validate_player_season(season, min_minutes: int) -> None:
         assert col.between(0, 1).all(), f"{pct} outside [0, 1]"
 
     for share in ["pass_completion_pct", "box_shot_share", "dribble_success_pct",
-                  "aerial_win_pct", "touches_att_third_share", "pressured_actions_share"]:
+                  "aerial_win_pct", "touches_att_third_share", "pressured_actions_share",
+                  "halfspace_touch_share", "wide_touch_share"]:
         col = season[share].dropna()
         assert col.between(0, 1).all(), f"{share} outside [0, 1]"
     print("Feature validation passed.")

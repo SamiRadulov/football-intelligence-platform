@@ -137,6 +137,38 @@ Thresholds and rules:
 | receptions_final_third_p90 | Ball receipts in final third | per 90 |
 | pressured_actions_share | Actions under pressure / all actions | actions |
 
+### Tactical zones (attacking half)
+
+The attacking half is divided by y-band using real pitch markings (the penalty
+area spans y 18–62):
+
+```
+ y  0 ---- 18 -------- 30 ---------- 50 -------- 62 ---- 80
+    |  wide  | halfspace |  Zone 14   | halfspace |  wide |
+```
+
+- **Zone 14** = `78 ≤ x < 102`, `30 ≤ y ≤ 50` — the central pocket immediately
+  behind the penalty area; the classic playmaker's zone.
+- **Halfspaces** = `60 ≤ x < 102` in either channel (`18 ≤ y < 30` or `50 < y ≤ 62`).
+  The two channels are **combined, not split left/right**, so the feature is
+  mirror-invariant: a left- and right-sided player in the same role should score as
+  similar rather than different.
+- **Wide channel** = `x ≥ 60` and outside the penalty-area width (`y < 18` or `y > 62`).
+
+| Metric | Definition | Denominator |
+|---|---|---|
+| zone14_receptions_p90 | Completed ball receipts in Zone 14 | per 90 |
+| zone14_entries_p90 | Completed passes/carries entering Zone 14 from outside | per 90 |
+| halfspace_touch_share | Touches in either halfspace / attacking-half touches | att-half touches (min 100) |
+| wide_touch_share | Touches in the wide channel / attacking-half touches | att-half touches (min 100) |
+
+Receptions (not just carries or entries) are used for Zone 14 because receiving
+there is the signal of a player *finding space between the lines*, which a
+ball-carrying count misses. Note these are only meaningful **within role**: strikers
+occupy Zone 14 naturally, so cross-role leaderboards are misleading — percentiles are
+ranked within role for exactly this reason. Some centre-backs fall below the
+100-touch guard and legitimately have null zone shares.
+
 ## Team style metrics (Module B)
 
 | Metric | Definition |

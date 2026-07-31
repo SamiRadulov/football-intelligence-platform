@@ -33,6 +33,8 @@ METRIC_COLUMNS = [
     "blocks_p90", "recoveries_p90", "def_action_height",
     "dribble_success_pct", "aerial_involvement_p90", "aerial_win_pct",
     "touches_att_third_share", "receptions_final_third_p90", "pressured_actions_share",
+    "zone14_receptions_p90", "zone14_entries_p90",
+    "halfspace_touch_share", "wide_touch_share",
 ]
 
 
@@ -147,6 +149,17 @@ def build_player_season(
     season["receptions_final_third_p90"] = _p90(season["receptions_final_third"], m)
     season["pressured_actions_share"] = _guarded_rate(
         season["actions_pressured"], season["touches"], thresholds["min_pass_attempts_for_rate"])
+
+    # --- Tactical zones ---
+    # Shares are taken over attacking-half touches: "of the work you do in the
+    # attacking half, how much is in the halfspaces vs out wide?"
+    min_att_half = thresholds["min_att_half_touches_for_share"]
+    season["zone14_receptions_p90"] = _p90(season["zone14_receptions"], m)
+    season["zone14_entries_p90"] = _p90(season["zone14_entries"], m)
+    season["halfspace_touch_share"] = _guarded_rate(
+        season["halfspace_touches"], season["touches_att_half"], min_att_half)
+    season["wide_touch_share"] = _guarded_rate(
+        season["wide_touches"], season["touches_att_half"], min_att_half)
 
     # Percentile-within-role for every metric (rank-based, robust to outliers).
     for col in METRIC_COLUMNS:

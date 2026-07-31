@@ -21,6 +21,25 @@ GOAL_X, GOAL_Y = 120.0, 40.0
 BOX_X_MIN, BOX_Y_MIN, BOX_Y_MAX = 102.0, 18.0, 62.0
 FINAL_THIRD_X = 80.0
 
+# Tactical zones in the attacking half. The y-bands tile the pitch width using
+# real pitch markings: the penalty area spans y 18-62, so the two "halfspace"
+# channels sit between the box edge and the central strip, and anything outside
+# y 18-62 is the wide channel.
+#
+#   y  0 ---- 18 -------- 30 ---------- 50 -------- 62 ---- 80
+#      |  wide  | halfspace |  Zone 14   | halfspace |  wide |
+#
+# Zone 14 is the central pocket immediately behind the penalty area (x 78-102):
+# the classic playmaker's zone.
+ATT_HALF_X = 60.0
+ZONE14_X_MIN, ZONE14_X_MAX = 78.0, 102.0
+ZONE14_Y_MIN, ZONE14_Y_MAX = 30.0, 50.0
+HALFSPACE_X_MIN, HALFSPACE_X_MAX = 60.0, 102.0
+
+# Halfspaces are deliberately combined (not split left/right) so the feature is
+# mirror-invariant: a left-sided and right-sided player in the same role should
+# come out similar, not different.
+
 FORWARD_MIN_METRES = 5.0        # forward pass: end at least this much nearer the goal line
 PROGRESSIVE_MIN_METRES = 10.0   # progressive: reduces distance-to-goal by at least this
 LONG_PASS_MIN = 30.0            # long pass: pass length at least this (pitch units)
@@ -38,6 +57,27 @@ def _dist_to_goal(x: pd.Series, y: pd.Series) -> pd.Series:
 
 def _in_box(x: pd.Series, y: pd.Series) -> pd.Series:
     return (x >= BOX_X_MIN) & (y >= BOX_Y_MIN) & (y <= BOX_Y_MAX)
+
+
+def _in_zone14(x: pd.Series, y: pd.Series) -> pd.Series:
+    """Central pocket just outside the penalty area (the playmaker's zone)."""
+    return (
+        (x >= ZONE14_X_MIN) & (x < ZONE14_X_MAX)
+        & (y >= ZONE14_Y_MIN) & (y <= ZONE14_Y_MAX)
+    )
+
+
+def _in_halfspace(x: pd.Series, y: pd.Series) -> pd.Series:
+    """Either channel between the penalty-area edge and the central strip."""
+    in_band = ((y >= BOX_Y_MIN) & (y < ZONE14_Y_MIN)) | (
+        (y > ZONE14_Y_MAX) & (y <= BOX_Y_MAX)
+    )
+    return (x >= HALFSPACE_X_MIN) & (x < HALFSPACE_X_MAX) & in_band
+
+
+def _in_wide_channel(x: pd.Series, y: pd.Series) -> pd.Series:
+    """Outside the width of the penalty area, in the attacking half."""
+    return (x >= ATT_HALF_X) & ((y < BOX_Y_MIN) | (y > BOX_Y_MAX))
 
 
 def _xg_assisted(events: pd.DataFrame) -> pd.DataFrame:
@@ -130,6 +170,18 @@ def compute_player_match(events: pd.DataFrame) -> pd.DataFrame:
     e["receptions_final_third"] = (receipt_complete & (e["location_x"] >= FINAL_THIRD_X)).astype(int)
     e["actions_pressured"] = (is_touch & e["under_pressure"]).astype(int)
 
+    # --- Tactical zones (attacking half) ---
+    # Receiving the ball in Zone 14 is the sharpest signal of a player finding
+    # space between the lines, which a pure carry/entry count would miss.
+    in_z14 = _in_zone14(e["location_x"], e["location_y"])
+    e["touches_att_half"] = (is_touch & (e["location_x"] >= ATT_HALF_X)).astype(int)
+    e["zone14_receptions"] = (receipt_complete & in_z14).astype(int)
+    pass_z14 = open_play_completed & ~in_z14 & _in_zone14(e["pass_end_x"], e["pass_end_y"])
+    carry_z14 = is_carry & ~in_z14 & _in_zone14(e["carry_end_x"], e["carry_end_y"])
+    e["zone14_entries"] = (pass_z14 | carry_z14).astype(int)
+    e["halfspace_touches"] = (is_touch & _in_halfspace(e["location_x"], e["location_y"])).astype(int)
+    e["wide_touches"] = (is_touch & _in_wide_channel(e["location_x"], e["location_y"])).astype(int)
+
     # --- Turnovers ---
     failed_pressured_pass = is_pass & e["pass_outcome"].notna() & e["under_pressure"]
     e["turnovers"] = (
@@ -145,6 +197,8 @@ def compute_player_match(events: pd.DataFrame) -> pd.DataFrame:
         "def_actions", "def_actions_x_sum",
         "dribbles", "dribbles_completed", "aerials_won", "aerials_lost",
         "touches", "touches_att_third", "receptions_final_third", "actions_pressured",
+        "touches_att_half", "zone14_receptions", "zone14_entries",
+        "halfspace_touches", "wide_touches",
         "turnovers",
     ]
     per_match = e.groupby(["match_id", "player_id", "team_id"], as_index=False)[count_columns].sum()
