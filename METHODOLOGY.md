@@ -128,6 +128,43 @@ leaders are Kompany among centre-backs and Andy Carroll among strikers.
 
 ## Module B — Team Playing-Style Classification
 
-Not yet implemented (Phase 5–6). This section will cover team-match style features,
-season aggregation with variability, PCA, clustering, cluster naming from centroids,
-and stability analysis.
+### 1. Style features
+
+28 style features are built **per team per match** across eight dimensions —
+possession and circulation, progression and directness, territory, width and
+crossing, pressing and defensive height, transitions, chance profile, and risk
+and ball security. Definitions are in the metric dictionary.
+
+Two implementation points worth understanding:
+
+- **Opponent-relative metrics.** Possession share, field tilt and PPDA are only
+  meaningful with both teams in view, so raw counts are computed per team and then
+  joined to the opponent's row in the same match. Possession share and field tilt
+  are validated to sum to exactly 1.0 across the two teams of every match.
+- **The coordinate flip.** StatsBomb records events from the acting team's
+  perspective, always attacking towards x = 120. Relating one team's pressing to
+  the other's passing therefore requires mirroring the pitch: PPDA pairs our
+  defensive actions at `x ≥ 48` with their passes at `x ≤ 72`.
+
+Season aggregation keeps both the **mean** and the **match-to-match standard
+deviation** of every feature. The standard deviation is a style signal in its own
+right — forcing every match into a single identity would hide whether a side is
+rigid or adaptable.
+
+### 2. Face validity
+
+The features recover the 2015/16 season without being told anything about it:
+
+| Expectation | Result |
+|---|---|
+| Possession sides | Man Utd (.583), Arsenal (.575), Liverpool, Spurs, Man City top; West Brom (.402) and Sunderland bottom |
+| Direct sides | West Brom, Leicester, Sunderland highest forward distance per pass |
+| Pressing sides | Spurs (PPDA 1.92) and Liverpool (1.93) most aggressive; Sunderland and West Brom least |
+| Leicester's title profile | 100th percentile for shots and final-third entries per 100 passes; 95th for directness, counters, width and crossing; 5th–15th for possession, pass completion and backward passes |
+| Set-piece reliance | Crystal Palace and West Brom highest; league mean 25.5% |
+
+### 3. Classification
+
+Not yet implemented (Phase 6). This section will cover PCA, clustering, naming
+clusters from their centroids, nearest-team similarity in the original feature
+space, and cluster stability analysis.

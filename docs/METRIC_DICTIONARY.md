@@ -171,21 +171,83 @@ ranked within role for exactly this reason. Some centre-backs fall below the
 
 ## Team style metrics (Module B)
 
+Built **per team per match** (`mart_team_match`), then aggregated to season
+`<feature>_mean`, `<feature>_sd` and `pct_<feature>` (`mart_team_season`). The
+standard deviation is a first-class output: a side that plays the same way every
+week and one that adapts heavily to the opponent can share a mean while being
+tactically very different.
+
+### Possession & circulation
 | Metric | Definition |
 |---|---|
-| possession_share | Team passes / all passes in match |
-| passes_per_possession | Completed passes per possession sequence |
-| directness | Forward distance per pass / total pass distance |
-| field_tilt | Team final-third passes / both teams' final-third passes |
-| high_press_intensity | Pressures in attacking 40% of pitch, per opponent pass |
-| def_action_height_team | Mean x of team defensive actions |
-| counterattack_share | Shots within 15 s of regain / all shots |
-| box_shot_share_team | Shots inside box / all shots |
-| cross_share | Crosses / final-third entries |
-| turnovers_p90_team | Possessions lost in own half per 90 |
+| possession_share | Team passes / all passes in the match (sums to 1 across the two teams) |
+| pass_completion | Completed / attempted open-play passes |
+| passes_per_possession | Completed passes / possession sequences the team had |
+| backward_pass_share | Completed passes ending ≥ 5 further from goal / completed passes |
 
-Team features are built per match first, then aggregated to season mean **and standard
-deviation** (variability is a style signal, not noise).
+### Progression & directness
+| Metric | Definition |
+|---|---|
+| forward_dist_per_pass | Mean `end_x − start_x` of completed open-play passes |
+| prog_actions_per_100_passes | (Progressive passes + carries) per 100 open-play passes |
+| long_pass_share | Passes ≥ 30 long / open-play passes |
+| final_third_entries_per_100_passes | Final-third entries per 100 open-play passes |
+
+### Territory
+| Metric | Definition |
+|---|---|
+| field_tilt | Team's completed final-third passes / both teams' (sums to 1) |
+| att_third_touch_share | Touches in the attacking third / all touches |
+| mean_action_x | Mean x-coordinate of all touches |
+
+### Width & crossing
+| Metric | Definition |
+|---|---|
+| wide_touch_share | Wide-channel touches / attacking-half touches |
+| halfspace_touch_share | Halfspace touches / attacking-half touches |
+| zone14_entries_per_100_passes | Zone 14 entries per 100 open-play passes |
+| cross_share | Crosses / final-third entries |
+| switch_share | Switches of play / open-play passes |
+
+### Pressing & defensive height
+| Metric | Definition |
+|---|---|
+| ppda | Opponent passes in their own 60% / our defensive actions in our attacking 60%. **Lower = more aggressive pressing** |
+| def_action_height | Mean x of defensive actions |
+| high_regain_share | Ball recoveries at `x ≥ 72` / all recoveries |
+
+**Coordinate flip.** StatsBomb records every event from the acting team's
+perspective (always attacking towards x = 120). PPDA therefore pairs *our*
+defensive actions at `x ≥ 48` with *their* passes at `x ≤ 72` (= 120 − 48) —
+the same strip of grass seen from opposite ends.
+
+### Transitions & chance profile
+| Metric | Definition |
+|---|---|
+| counter_shot_share | Shots in possessions tagged "From Counter" / all non-penalty shots |
+| shots_per_100_passes | Non-penalty shots per 100 open-play passes |
+| box_shot_share | Shots inside the penalty area / non-penalty shots |
+| mean_shot_distance | Mean distance-to-goal of non-penalty shots |
+| npxg_per_shot | Non-penalty xG per shot |
+| set_piece_shot_share | See below |
+
+**Set pieces need care.** `play_pattern` records how the *possession started* and
+persists for the whole possession, so counting every shot in a
+corner/free-kick/throw-in possession as a set-piece shot gives **54%** of all
+shots — nonsense (a quarter of all events this season are tagged "From Throw In"
+simply because the phase began that way). A set-piece shot is therefore defined
+as a shot from a **corner or free-kick** possession taken **within 10 seconds of
+the possession starting** — the first phase of the routine. That yields a league
+mean of **25.5%**, matching the published benchmark. Throw-ins are excluded
+entirely: they restart open play. Counters need no such window, since a
+possession tagged "From Counter" is by definition a fast direct attack.
+
+### Risk & ball security
+| Metric | Definition |
+|---|---|
+| turnovers_per_100_passes | Turnovers per 100 open-play passes |
+| pressured_pass_completion | Completed / attempted passes made under pressure |
+| own_half_loss_share | Turnovers in own half / all turnovers |
 
 ## Explicit exclusions
 
