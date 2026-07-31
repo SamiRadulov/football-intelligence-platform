@@ -33,5 +33,132 @@ role_groups:
   - key: ST
     name: Strikers
 
-# Role-specific feature lists and similarity weights are added in the
-# feature-mart phase (Phase 3) and similarity phase (Phase 4).
+similarity:
+  # Winsorize at these percentiles (within role) before standardizing, so a
+  # single extreme season cannot dominate the distance. Raw values are always
+  # what the user sees.
+  winsorize_lower: 0.01
+  winsorize_upper: 0.99
+  # A candidate must have at least this share of its role's features present,
+  # otherwise it is excluded (too little data to compare fairly).
+  min_feature_coverage: 0.7
+
+# Role-specific feature lists and similarity weights.
+# Weight scale: 1.0 = normal importance, >1 = defining for the role, <1 = minor.
+# These are analytical choices — edit them here, never in code.
+role_features:
+  CB:
+    # Defensive volume, aerial dominance and line height define a centre-back;
+    # passing and progression separate ball-players from pure stoppers.
+    padj_tackles_p90: 1.5
+    padj_interceptions_p90: 1.5
+    blocks_p90: 1.2
+    recoveries_p90: 1.0
+    padj_pressures_p90: 1.0
+    def_action_height: 1.5
+    aerial_involvement_p90: 1.5
+    aerial_win_pct: 1.5
+    pass_attempts_p90: 1.2
+    pass_completion_pct: 1.2
+    forward_pass_share: 1.2
+    long_pass_share: 1.2
+    prog_passes_p90: 1.5
+    prog_carries_p90: 1.2
+    turnovers_p90: 0.8
+
+  FB:
+    # Where a full-back operates (wide vs inverted) and how they deliver the
+    # ball matter as much as their defending.
+    wide_touch_share: 1.5
+    halfspace_touch_share: 1.5
+    crosses_box_p90: 1.5
+    prog_carries_p90: 1.5
+    prog_passes_p90: 1.2
+    final_third_entries_p90: 1.2
+    box_entries_p90: 1.2
+    key_passes_p90: 1.0
+    padj_tackles_p90: 1.2
+    padj_interceptions_p90: 1.2
+    padj_pressures_p90: 1.0
+    recoveries_p90: 0.8
+    def_action_height: 1.2
+    pass_attempts_p90: 1.0
+    pass_completion_pct: 1.0
+    forward_pass_share: 1.0
+    dribble_success_pct: 1.0
+    aerial_involvement_p90: 0.8
+    turnovers_p90: 0.8
+
+  CM:
+    # Passing volume and progression, plus defensive workrate, separate holders
+    # from box-to-box runners from deep playmakers.
+    pass_attempts_p90: 1.5
+    pass_completion_pct: 1.2
+    forward_pass_share: 1.2
+    long_pass_share: 1.0
+    prog_passes_p90: 1.5
+    prog_carries_p90: 1.2
+    final_third_entries_p90: 1.2
+    box_entries_p90: 1.0
+    key_passes_p90: 1.2
+    xg_assisted_p90: 1.0
+    through_balls_p90: 0.8
+    zone14_receptions_p90: 1.2
+    zone14_entries_p90: 1.0
+    padj_pressures_p90: 1.5
+    padj_tackles_p90: 1.5
+    padj_interceptions_p90: 1.2
+    recoveries_p90: 1.2
+    def_action_height: 1.2
+    shots_p90: 0.8
+    npxg_p90: 0.8
+    aerial_involvement_p90: 0.8
+    pressured_actions_share: 1.0
+    turnovers_p90: 1.0
+
+  AM_W:
+    # Creation, carrying and shot volume, plus where they occupy space —
+    # touchline winger vs inverted forward vs central playmaker.
+    key_passes_p90: 1.5
+    xg_assisted_p90: 1.5
+    crosses_box_p90: 1.2
+    through_balls_p90: 1.0
+    prog_carries_p90: 1.5
+    dribble_success_pct: 1.2
+    box_entries_p90: 1.2
+    final_third_entries_p90: 1.0
+    shots_p90: 1.5
+    npxg_p90: 1.5
+    box_shot_share: 1.0
+    npxg_per_shot: 1.0
+    zone14_receptions_p90: 1.5
+    halfspace_touch_share: 1.5
+    wide_touch_share: 1.5
+    receptions_final_third_p90: 1.2
+    touches_att_third_share: 1.0
+    pass_completion_pct: 0.8
+    forward_pass_share: 0.8
+    padj_pressures_p90: 1.0
+    turnovers_p90: 0.8
+
+  ST:
+    # Shot profile and aerial presence dominate; link play and pressing
+    # separate target men, poachers and pressing forwards.
+    npxg_p90: 1.8
+    shots_p90: 1.5
+    box_shot_share: 1.5
+    npxg_per_shot: 1.5
+    aerial_involvement_p90: 1.5
+    aerial_win_pct: 1.2
+    key_passes_p90: 1.2
+    xg_assisted_p90: 1.2
+    prog_carries_p90: 1.2
+    dribble_success_pct: 1.0
+    zone14_receptions_p90: 1.2
+    receptions_final_third_p90: 1.2
+    box_entries_p90: 1.0
+    pass_completion_pct: 1.0
+    forward_pass_share: 0.8
+    padj_pressures_p90: 1.2
+    pressured_actions_share: 1.0
+    turnovers_p90: 0.8

@@ -66,7 +66,6 @@ def build_player_season(
     roles: pd.DataFrame,
     team_possession: pd.DataFrame,
     dim_players: pd.DataFrame,
-    dim_matches: pd.DataFrame,
     config: dict,
 ) -> pd.DataFrame:
     thresholds = config["thresholds"]

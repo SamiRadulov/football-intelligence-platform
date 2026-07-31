@@ -69,7 +69,6 @@ def main() -> None:
     events = con.execute(f"SELECT {', '.join(EVENT_COLUMNS)} FROM fact_events").df()
     fact_lineups = con.execute("SELECT * FROM fact_lineups").df()
     dim_players = con.execute("SELECT * FROM dim_players").df()
-    dim_matches = con.execute("SELECT * FROM dim_matches").df()
     print(f"  events={len(events):,}, lineups={len(fact_lineups):,}")
 
     print("Assigning roles and computing per-match metrics...")
@@ -84,7 +83,6 @@ def main() -> None:
         roles=roles,
         team_possession=team_possession,
         dim_players=dim_players,
-        dim_matches=dim_matches,
         config=config,
     )
 

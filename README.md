@@ -38,8 +38,12 @@ py -3.12 -m venv .venv
 # 4. Build the player feature marts (role-aware per-90 / percentile metrics).
 .venv/Scripts/python scripts/build_player_features.py
 
-# 5. Run the tests
+# 5. Query the similarity engine
+.venv/Scripts/python scripts/find_similar.py "Kante" --top 5
+
+# 6. Run the tests and the similarity validation
 .venv/Scripts/python -m pytest -q
+.venv/Scripts/python scripts/validate_similarity.py
 ```
 
 ## Data layers
@@ -62,6 +66,13 @@ The dataset is defined once in [artifacts/feature_config.yml](artifacts/feature_
 ## Data source & attribution
 
 This project uses **StatsBomb Open Data**. See [DATA_SOURCES.md](DATA_SOURCES.md) for attribution and licensing details. Raw data is not redistributed in this repository.
+
+## Methodology
+
+[METHODOLOGY.md](METHODOLOGY.md) documents the modelling choices, validation results
+and limitations. In short: features are standardized within role group, similarity is
+weighted cosine on those z-scores, candidates are filtered *before* scoring, and every
+result is explained by decomposing the weighted feature distance.
 
 ## License
 
