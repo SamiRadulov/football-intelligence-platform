@@ -165,6 +165,78 @@ The features recover the 2015/16 season without being told anything about it:
 
 ### 3. Classification
 
-Not yet implemented (Phase 6). This section will cover PCA, clustering, naming
-clusters from their centroids, nearest-team similarity in the original feature
-space, and cluster stability analysis.
+Season style **means** are z-scored across the league and reduced by PCA; KMeans
+is fitted on the retained components. The match-to-match standard deviations are
+reported alongside a team's profile but are not clustered on — 28 means plus 28
+standard deviations over 20 teams would be far more dimensions than the sample
+supports.
+
+**The style axes.** Five components explain 84.2% of the variance:
+
+| Axis | Share | High end | Low end |
+|---|---|---|---|
+| PC1 | 38.6% | passes per possession, possession share, field tilt, pass completion | forward distance per pass, cross share, turnovers, long passes |
+| PC2 | 19.9% | attacking-third touches, mean action x, high regains, box shots | progressive actions per pass, backward passes, own-half losses, shot distance |
+
+PC1 is control versus directness; PC2 is advanced territory versus a deep,
+long-range game.
+
+**Choosing k.** Candidates were scored on silhouette *and* on stability — the mean
+adjusted Rand index between the partitions found by 25 different random restarts.
+With only 20 teams, stability is the more trustworthy measure, because a
+silhouette computed on so few points moves sharply for small changes.
+
+| k | Silhouette | Stability (ARI) | Smallest cluster |
+|---|---|---|---|
+| **3** | **0.276** | **1.000** | 6 |
+| 4 | 0.241 | 0.743 | 3 |
+| 5 | 0.215 | 0.658 | 2 |
+| 6 | 0.184 | 0.564 | 2 |
+
+k = 3 is best on both measures and is also the smallest candidate, so no
+trade-off arises. Every random restart finds the identical partition. Dropping a
+random 20% of the features and refitting still reproduces it at ARI 0.87.
+
+**The clusters, named only after inspecting their centroids.** Labels and their
+supporting z-scores are recorded in `artifacts/feature_config.yml`:
+
+| Cluster | Teams | Defining evidence |
+|---|---|---|
+| **Possession-dominant high press** | Arsenal, Chelsea, Liverpool, Man City, Man Utd, Spurs | field tilt +1.33, possession +1.27, passes per possession +1.22, defensive height +1.08; PPDA −1.18 (low = aggressive), long passes −1.14 |
+| **Direct and wide** | Palace, Leicester, Norwich, Southampton, Sunderland, Watford, West Brom, West Ham | forward distance per pass +0.94, cross share +0.93, long passes +0.90, turnovers +0.96; possession −0.91, pass completion −1.04 |
+| **Deep build-up, low territory** | Bournemouth, Villa, Everton, Newcastle, Stoke, Swansea | own-half losses +0.77, backward passes +0.71, PPDA +0.39 (high = passive); attacking-third touches −1.16, high regains −1.16, mean action x −1.02 |
+
+The middle cluster is deliberately **not** called "counter-attacking":
+`counter_shot_share` is not among its defining features, so the evidence does not
+support that name however tempting it is for these teams.
+
+**Beyond hard boundaries.** Nearest-team similarity is also computed by Euclidean
+distance in the original standardized feature space, not the PCA projection, so
+nothing is lost to discarded variance. Euclidean rather than cosine because for
+team style the *magnitude* of a trait matters, not only its direction. Neighbours
+cross cluster lines freely — Liverpool's nearest sides are Spurs, Chelsea and
+Everton, the last from a different cluster — which is the point: a team sitting
+between two styles should not be trapped by its label.
+
+**Outliers are surfaced, not hidden.** Distance to a team's own centroid is stored
+and reported. Arsenal (4.89) is the least typical member of the possession
+cluster, and Leicester (4.78) of the direct cluster — both genuinely unusual sides
+that season.
+
+### 4. Limitations of the style model
+
+- **Style and quality are entangled.** The possession cluster is exactly the "big
+  six", and possession share and field tilt correlate with team strength — so
+  that cluster partly reflects quality, not only tactics. This is the sharpest
+  criticism of the model and should be stated before anyone else spots it. The
+  counter-evidence is the "direct and wide" cluster, which contains both the
+  champions (Leicester) and two relegated sides (Norwich, Sunderland): teams at
+  opposite ends of the table sharing one style. So the clusters are not merely a
+  league table, but on the possession axis the two effects cannot be separated
+  with one season of one league.
+- **20 teams is a very small sample.** PCA on 28 features over 20 observations is
+  unstable in principle; the stability checks are what justify trusting this
+  particular solution, not the sample size.
+- **One season, one league.** No cross-competition validation is possible here, so
+  the labels describe this population and should not be assumed to transfer.
+- **Clusters are descriptive.** They say how teams played, not how well.

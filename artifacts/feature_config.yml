@@ -33,6 +33,35 @@ role_groups:
   - key: ST
     name: Strikers
 
+clustering:
+  # Team style clustering. Only 20 teams exist, so the feature space is reduced
+  # by PCA before clustering and k is deliberately kept small.
+  pca_variance_target: 0.80   # keep enough components to explain this much variance
+  k_candidates: [3, 4, 5, 6]
+  n_seeds: 25                 # random restarts used to measure cluster stability
+  random_state: 42
+  # Chosen after inspecting the k evaluation table (see METHODOLOGY.md).
+  # k=3 was best on silhouette (0.276) AND perfectly stable across restarts
+  # (ARI 1.00), and is the smallest candidate — no trade-off to make.
+  k: 3
+  # Cluster labels are filled in only AFTER inspecting the centroids, never
+  # before. Keys are cluster ids as strings. Each label below is justified by
+  # the centroid z-scores printed by scripts/build_team_clusters.py.
+  labels:
+    # field_tilt +1.33, possession_share +1.27, passes_per_possession +1.22,
+    # def_action_height +1.08; ppda -1.18 (low PPDA = aggressive pressing),
+    # long_pass_share -1.14, cross_share -0.99.
+    "0": "Possession-dominant high press"
+    # forward_dist_per_pass +0.94, long_pass_share +0.90, cross_share +0.93,
+    # turnovers_per_100_passes +0.96; possession_share -0.91, pass_completion -1.04.
+    # Deliberately NOT called "counter-attacking": counter_shot_share is not
+    # among the defining features, so the evidence does not support that name.
+    "1": "Direct and wide"
+    # att_third_touch_share -1.16, high_regain_share -1.16, mean_action_x -1.02,
+    # shots_per_100_passes -0.85; backward_pass_share +0.71,
+    # own_half_loss_share +0.77, ppda +0.39 (high PPDA = passive).
+    "2": "Deep build-up, low territory"
+
 similarity:
   # Winsorize at these percentiles (within role) before standardizing, so a
   # single extreme season cannot dominate the distance. Raw values are always

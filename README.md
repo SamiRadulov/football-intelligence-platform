@@ -41,10 +41,13 @@ py -3.12 -m venv .venv
 # 5. Build the team style marts (per-match features, season mean + variability).
 .venv\Scripts\python scripts\build_team_features.py
 
-# 6. Query the similarity engine.
+# 6. Fit the team style clusters (use --explore first to review k and centroids).
+.venv\Scripts\python scripts\build_team_clusters.py
+
+# 7. Query the similarity engine.
 .venv\Scripts\python scripts\find_similar.py "Kante" --top 5
 
-# 7. Run the tests and the similarity validation.
+# 8. Run the tests and the similarity validation.
 .venv\Scripts\python -m pytest -q
 .venv\Scripts\python scripts\validate_similarity.py
 ```
@@ -67,6 +70,7 @@ On macOS or Linux use `.venv/bin/python` instead of `.venv\Scripts\python`.
 | `mart_player_season` | player | Role-aware per-90, possession-adjusted and percentile features (≥ 600 minutes) |
 | `mart_team_match` | team-match | 28 playing-style features |
 | `mart_team_season` | team | Season mean, match-to-match standard deviation and league percentile |
+| `model_team_style` | team | PCA coordinates, style cluster + label, distance to centroid, nearest teams |
 
 Build steps read raw and write staging/curated; nothing overwrites raw. See
 [docs/METRIC_DICTIONARY.md](docs/METRIC_DICTIONARY.md) for metric definitions.
