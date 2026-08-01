@@ -47,7 +47,10 @@ py -3.12 -m venv .venv
 # 7. Query the similarity engine.
 .venv\Scripts\python scripts\find_similar.py "Kante" --top 5
 
-# 8. Run the tests and the similarity validation.
+# 8. Launch the app (opens at http://localhost:8501).
+.venv\Scripts\streamlit run app.py
+
+# 9. Run the tests and the similarity validation.
 .venv\Scripts\python -m pytest -q
 .venv\Scripts\python scripts\validate_similarity.py
 ```
@@ -80,6 +83,23 @@ The dataset is defined once in [artifacts/feature_config.yml](artifacts/feature_
 ## Data source & attribution
 
 This project uses **StatsBomb Open Data**. See [DATA_SOURCES.md](DATA_SOURCES.md) for attribution and licensing details. Raw data is not redistributed in this repository.
+
+## The app
+
+A Streamlit application with six pages:
+
+| Page | What it does |
+|---|---|
+| **Home** | Coverage, what the platform claims and what it does not |
+| **Player Search** | Pick a reference player, filter candidates, ranked similarity with reasons |
+| **Player Comparison** | Percentile radar, side-by-side bars, closest and most different dimensions |
+| **Team Style Map** | PCA style space coloured by cluster, with what each axis means |
+| **Team Profile** | Style fingerprint, nearest teams, centroid comparison, match-to-match variability |
+| **Methodology & Data Quality** | Definitions, validation results, pipeline checks, limitations |
+
+```bash
+.venv\Scripts\streamlit run app.py
+```
 
 ## Methodology
 
